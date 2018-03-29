@@ -1,0 +1,20 @@
+{
+  "name": "format-polymer-project",
+  "version": "0.0.1",
+  "description": "Formats your entire project",
+  "main": "index.js",
+  "scripts": {
+    "run": "node index.js"
+  },
+  "author": "The Polymer Project Authors",
+  "license": "BSD-3-Clause",
+  "dependencies": {
+    "@types/node": "^9.6.1",
+    "clang-format": "^1.2.2",
+    "command-line-args": "^5.0.2"
+  },
+  "devDependencies": {
+    "@types/command-line-args": "^4.0.2",
+    "typescript": "^2.8.1"
+  }
+}
