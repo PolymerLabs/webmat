@@ -2,9 +2,9 @@
   "name": "format-polymer-project",
   "version": "0.0.1",
   "description": "Formats your entire project",
-  "main": "index.js",
+  "bin": "bin/format-polymer-project.js",
   "scripts": {
-    "run": "node index.js"
+    "run": "node lib/index.js"
   },
   "author": "The Polymer Project Authors",
   "license": "BSD-3-Clause",
