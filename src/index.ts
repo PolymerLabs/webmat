@@ -28,8 +28,6 @@ export async function run() {
 
   const activeConfig = resolveConfigs(defaultConfig, userConfig);
   const filesToFormat = await getFilesToFormat(activeConfig);
-
-  console.log(filesToFormat);
 }
 
 function resolveConfigs(
@@ -99,57 +97,5 @@ function getFilesToFormat(config: FormatConfig): string[] {
   const filesToFormat =
       fastGlob.sync<string>(config.include, {ignore: config.exclude});
 
-  console.log(config.include, config.exclude)
-
   return filesToFormat;
 }
-
-// async function resolveGlobs(
-//     include: string[], exclude: string[]): Promise<FormatFileSet> {
-//   const includePromises: Promise<string[]>[] = [];
-//   const excludePromises: Promise<string[]>[] = [];
-
-//   for (const globPattern of include) {
-//     includePromises.push(globbed(globPattern));
-//   }
-
-//   for (const globPattern of exclude) {
-//     excludePromises.push(globbed(globPattern));
-//   }
-
-//   const [includeGlobResults, excludeGlobResults] = await Promise.all(
-//       [Promise.all(includePromises), Promise.all(excludePromises)]);
-
-//   const includeSet: Set<string> = new Set();
-//   for (const globResult of includeGlobResults) {
-//     for (const file of globResult) {
-//       const fullPath = path.join(process.cwd(), file);
-//       includeSet.add(fullPath);
-//     }
-//   }
-
-//   const excludeSet: Set<string> = new Set();
-//   for (const globResult of excludeGlobResults) {
-//     for (const file of globResult) {
-//       const fullPath = path.join(process.cwd(), file);
-//       excludeSet.add(fullPath);
-//     }
-//   }
-
-//   const formatFileSet:
-//       FormatFileSet = {include: includeSet, exclude: excludeSet};
-
-//   return formatFileSet;
-// }
-
-// function setSubtract<T>(originalSet: Set<T>, toDelete: Set<T>): Set<T> {
-//   for (const element of toDelete) {
-//     originalSet.delete(element);
-//   }
-
-//   return originalSet;
-// }
-
-// function setAdd<T>(a: Set<T>, b: Set<T>): Set<T> {
-//   return new Set([...a, ...b])
-// }
