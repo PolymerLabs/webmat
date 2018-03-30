@@ -1,0 +1,13 @@
+{
+  "include": [
+    "**/*.js",
+    "**/*.ts",
+    "**/*.html"
+  ],
+  "exclude": [
+    "**/*.min.js",
+    "**/*.d.ts",
+    "node_modules/**/*",
+    "bower_components/**/*"
+  ]
+}
