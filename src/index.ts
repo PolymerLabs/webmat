@@ -22,19 +22,26 @@ interface ParsedConfig {
 }
 
 interface ContentChunk {
-  stream: stream.Readable, isHtml: false
+  stream: stream.Readable
 }
 
-interface HtmlContentChunk {
-  stream: stream.Readable, node: dom5.Node, isHtml: true
+interface HtmlContentChunk extends ContentChunk {
+  node: dom5.Node
 }
 
 interface FileContent {
-  filePath: string, contents: (ContentChunk|HtmlContentChunk)[],
+  filePath: string, contents: (ContentChunk|HtmlContentChunk)[], isHtml: Boolean
+}
+
+interface HtmlFileContent extends FileContent {
+  contents: HtmlContentChunk[], isHtml: true
+}
+
+interface NonHtmlFileContent extends FileContent {
+  contents: ContentChunk[], isHtml: false
 }
 
 export async function run() {
-  console.log('asdfasdfasdf')
   const [defaultConfig, userConfig] = await Promise.all(
       [readConfigFile(DEFAULT_CONFIG_FILENAME), readConfigFile()]);
 
@@ -46,13 +53,12 @@ export async function run() {
 async function formatFiles(filePaths: string[]): Promise<void> {
   const htmlFiles = filePaths.filter(file => path.extname(file) === '.html');
   const nonHtmlFiles = filePaths.filter(file => path.extname(file) !== '.html');
-  const formattedContents: FileContent[] = [];
   const htmlFormatPromises: Promise<void>[] = [];
 
   for (const path of htmlFiles) {
     const htmlFormatted =
         formatHTMLFiles(path).then(function(formattedContent) {
-          formattedContents.push(formattedContent);
+          writeTofile(formattedContent);
         });
 
     htmlFormatPromises.push(htmlFormatted);
@@ -60,34 +66,32 @@ async function formatFiles(filePaths: string[]): Promise<void> {
 
   for (const path of nonHtmlFiles) {
     const formattedContent = formatNonHTMLFiles(path);
-    formattedContents.push(formattedContent);
+    writeTofile(formattedContent);
   }
 
   // wait for all HTML files to be formatted as well
   await Promise.all(htmlFormatPromises);
-
-  for (const formattedContent of formattedContents) {
-    console.log(formattedContent);
-  }
 };
 
-async function formatHTMLFiles(filePath: string): Promise<FileContent> {
+function writeTofile(formattedContent: (HtmlFileContent|NonHtmlFileContent)):
+    void {
+  if (formattedContent.isHtml) {
+  } else {
+  }
+}
+
+async function formatHTMLFiles(filePath: string): Promise<HtmlFileContent> {
   const scriptContent = await getInlineScriptContents(filePath);
-  const formattedContent: FileContent = {filePath: filePath, contents: []};
+  const formattedContent:
+      HtmlFileContent = {filePath: filePath, contents: [], isHtml: true};
 
   for (const contentChunk of scriptContent.contents) {
-    if (!contentChunk.isHtml) {
-      throw new Error(
-          `You are attempting to format ${filePath} as an HTML file`);
-    }
-
     const cfChildProcess = clangFormat.spawnClangFormat(
         [], function() {}, ['pipe', 'pipe', process.stderr]);
 
     contentChunk.stream.pipe(cfChildProcess.stdin);
 
     const formattedChunk: HtmlContentChunk = {
-      isHtml: true,
       node: contentChunk.node,
       stream: cfChildProcess.stdout
     };
@@ -98,24 +102,26 @@ async function formatHTMLFiles(filePath: string): Promise<FileContent> {
   return formattedContent;
 }
 
-function formatNonHTMLFiles(filePath: string): FileContent {
+function formatNonHTMLFiles(filePath: string): NonHtmlFileContent {
   const file = new Vinyl({path: filePath});
   const stream = clangFormat(file, 'utf-8', 'file', function() {});
-  const contentChunk: ContentChunk = {stream: stream, isHtml: false};
-  const formattedContent:
-      FileContent = {filePath: filePath, contents: [contentChunk]};
+  const contentChunk: ContentChunk = {stream: stream};
+  const formattedContent: NonHtmlFileContent = {
+    filePath: filePath,
+    contents: [contentChunk],
+    isHtml: false
+  };
 
   return formattedContent;
 }
 
-async function getInlineScriptContents(filePath: string): Promise<FileContent> {
+async function getInlineScriptContents(filePath: string):
+    Promise<HtmlFileContent> {
   const htmlContent = await readFile(filePath, 'utf-8');
   const dom = parse5.parse(htmlContent);
   const scriptNodes = dom5.queryAll(dom, dom5.predicates.hasTagName('script'));
-  const contentChunks: FileContent = {
-    filePath: filePath,
-    contents: [],
-  };
+  const contentChunks:
+      HtmlFileContent = {filePath: filePath, contents: [], isHtml: true};
 
   for (const scriptNode of scriptNodes) {
     const content = dom5.getTextContent(scriptNode);
@@ -126,11 +132,8 @@ async function getInlineScriptContents(filePath: string): Promise<FileContent> {
     contentStream.push(content);
     contentStream.push(null);
 
-    const contentChunk: HtmlContentChunk = {
-      node: scriptNode,
-      stream: contentStream,
-      isHtml: true
-    };
+    const contentChunk:
+        HtmlContentChunk = {node: scriptNode, stream: contentStream};
 
     contentChunks.contents.push(contentChunk);
   }
