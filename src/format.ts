@@ -31,30 +31,30 @@ interface NonHtmlFileContent extends FileContent {
 export async function formatFiles(filePaths: string[]): Promise<void> {
   const htmlFiles = filePaths.filter(file => path.extname(file) === '.html');
   const nonHtmlFiles = filePaths.filter(file => path.extname(file) !== '.html');
-  const htmlFormatPromises: Promise<void>[] = [];
+  const formatPromises: Promise<void>[] = [];
 
   for (const path of htmlFiles) {
     const htmlFormatted =
         formatHTMLFiles(path).then(function(formattedContent) {
-          writeTofile(formattedContent);
+          return writeTofile(formattedContent);
         });
 
-    htmlFormatPromises.push(htmlFormatted);
+    formatPromises.push(htmlFormatted);
   }
 
   for (const path of nonHtmlFiles) {
-    const formattedContent = formatNonHTMLFiles(path);
-    writeTofile(formattedContent);
+    const formattedContent = formatInPlace(path);
   }
 
   // wait for all HTML files to be formatted as well
-  await Promise.all(htmlFormatPromises);
+  await Promise.all(formatPromises);
 };
 
 async function writeTofile(
     formattedContent: (HtmlFileContent|NonHtmlFileContent)): Promise<void> {
   const writableStream = fs.createWriteStream(formattedContent.filePath);
   if (formattedContent.isHtml) {
+    console.log('writing to ' + formattedContent.filePath);
     for (const chunk of formattedContent.contents) {
       let stringifiedContents = '';
 
@@ -62,24 +62,18 @@ async function writeTofile(
         stringifiedContents += data.toString();
       });
 
-      const endPromise = new Promise(resolve => {
+      await new Promise(resolve => {
         chunk.stream.on('end', () => {
           resolve();
         });
       });
 
-
-      await endPromise;
       dom5.setTextContent(chunk.node, stringifiedContents);
     }
 
     writableStream.write(parse5.serialize(formattedContent.dom));
     writableStream.end();
-  } else {
-    console.log('writing to ' + formattedContent.filePath)
-    const chunk = formattedContent.contents[0];
-    chunk.stream.pipe(writableStream);
-    writableStream.end();
+    console.log('finished writing to ' + formattedContent.filePath);
   }
 }
 
@@ -107,21 +101,8 @@ async function formatHTMLFiles(filePath: string): Promise<HtmlFileContent> {
   return formattedContent;
 }
 
-function formatNonHTMLFiles(filePath: string): NonHtmlFileContent {
-  const file = new Vinyl({path: filePath});
-  const stream = clangFormat(file, 'utf-8', 'file', function() {});
-  const contentChunk: ContentChunk = {stream: stream};
-  const formattedContent: NonHtmlFileContent = {
-    filePath: filePath,
-    contents: [contentChunk],
-    isHtml: false
-  };
-
-  stream.on('data', function(data) {
-    console.log(data.toString)
-  })
-
-  return formattedContent;
+function formatInPlace(filePath: string): void {
+  clangFormat.spawnClangFormat([filePath, '-i'], function(){}, ['ignore', 'pipe', process.stderr]);
 }
 
 async function getInlineScriptContents(filePath: string):

@@ -7,5 +7,5 @@ export async function run() {
 
   const activeConfig = resolveConfigs(defaultConfig, userConfig);
   const filesToFormat = await getFilesToFormat(activeConfig);
-  formatFiles(filesToFormat);
+  await formatFiles(filesToFormat);
 }

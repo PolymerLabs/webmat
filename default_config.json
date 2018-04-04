@@ -1,13 +1,8 @@
 {
   "include": [
-    "**/*.js",
-    "**/*.ts",
-    "**/*.html"
+    "hello.js",
+    "index.html"
   ],
   "exclude": [
-    "**/*.min.js",
-    "**/*.d.ts",
-    "node_modules/**/*",
-    "bower_components/**/*"
   ]
 }
