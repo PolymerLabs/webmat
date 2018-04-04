@@ -43,7 +43,7 @@ export async function formatFiles(filePaths: string[]): Promise<void> {
   }
 
   for (const path of nonHtmlFiles) {
-    const formattedContent = formatInPlace(path);
+    formatInPlace(path);
   }
 
   // wait for all HTML files to be formatted as well
@@ -54,7 +54,6 @@ async function writeTofile(
     formattedContent: (HtmlFileContent|NonHtmlFileContent)): Promise<void> {
   const writableStream = fs.createWriteStream(formattedContent.filePath);
   if (formattedContent.isHtml) {
-    console.log('writing to ' + formattedContent.filePath);
     for (const chunk of formattedContent.contents) {
       let stringifiedContents = '';
 
@@ -73,7 +72,6 @@ async function writeTofile(
 
     writableStream.write(parse5.serialize(formattedContent.dom));
     writableStream.end();
-    console.log('finished writing to ' + formattedContent.filePath);
   }
 }
 
