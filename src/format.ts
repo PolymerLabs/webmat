@@ -6,7 +6,6 @@ import * as parse5 from 'parse5';
 import * as path from 'path';
 import * as stream from 'stream';
 import {promisify} from 'util';
-import * as Vinyl from 'vinyl';
 
 import {FormatConfig} from './cli';
 

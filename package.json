@@ -4,22 +4,19 @@
   "description": "Formats your entire project",
   "bin": "bin/format-polymer-project.js",
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "format": "node ./bin/format-polymer-project.js"
   },
   "author": "The Polymer Project Authors",
   "license": "BSD-3-Clause",
   "dependencies": {
     "clang-format": "^1.2.2",
-    "command-line-args": "^5.0.2",
     "dom5": "^3.0.0",
     "fast-glob": "^2.2.0",
-    "parse5": "^4.0.0",
-    "vinyl": "^2.1.0"
+    "parse5": "^4.0.0"
   },
   "devDependencies": {
     "@types/node": "^9.6.1",
-    "@types/vinyl": "^2.0.2",
-    "@types/command-line-args": "^4.0.2",
     "typescript": "^2.8.1"
   }
 }
