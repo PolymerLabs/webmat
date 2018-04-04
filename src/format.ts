@@ -99,7 +99,8 @@ async function formatHTMLFiles(filePath: string): Promise<HtmlFileContent> {
 }
 
 function formatInPlace(filePath: string): void {
-  clangFormat.spawnClangFormat([filePath, '-i'], function(){}, ['ignore', 'pipe', process.stderr]);
+  clangFormat.spawnClangFormat(
+      [filePath, '-i'], function() {}, ['ignore', 'pipe', process.stderr]);
 }
 
 async function getInlineScriptContents(filePath: string):
