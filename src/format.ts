@@ -11,20 +11,11 @@ import {FormatConfig} from './cli';
 
 const readFile = promisify(fs.readFile);
 
-interface ContentChunk {
-  stream: stream.Readable
+interface HtmlContentChunk {
+  stream: stream.Readable, node: dom5.Node
 }
-interface HtmlContentChunk extends ContentChunk {
-  node: dom5.Node
-}
-interface FileContent {
-  filePath: string, contents: (ContentChunk|HtmlContentChunk)[], isHtml: Boolean
-}
-interface HtmlFileContent extends FileContent {
-  contents: HtmlContentChunk[], isHtml: true, dom: dom5.Node
-}
-interface NonHtmlFileContent extends FileContent {
-  contents: [ContentChunk], isHtml: false
+interface HtmlFileContent {
+  filePath: string, contents: HtmlContentChunk[], dom: dom5.Node
 }
 
 export async function formatFiles(filePaths: string[]): Promise<void> {
@@ -49,35 +40,35 @@ export async function formatFiles(filePaths: string[]): Promise<void> {
   await Promise.all(formatPromises);
 };
 
-async function writeTofile(
-    formattedContent: (HtmlFileContent|NonHtmlFileContent)): Promise<void> {
+async function writeTofile(formattedContent: (HtmlFileContent)): Promise<void> {
   const writableStream = fs.createWriteStream(formattedContent.filePath);
-  if (formattedContent.isHtml) {
-    for (const chunk of formattedContent.contents) {
-      let stringifiedContents = '';
+  for (const chunk of formattedContent.contents) {
+    let stringifiedContents = '';
 
-      chunk.stream.on('data', function(data) {
-        stringifiedContents += data.toString();
+    chunk.stream.on('data', function(data) {
+      stringifiedContents += data.toString();
+    });
+
+    await new Promise(resolve => {
+      chunk.stream.on('end', () => {
+        resolve();
       });
+    });
 
-      await new Promise(resolve => {
-        chunk.stream.on('end', () => {
-          resolve();
-        });
-      });
-
-      dom5.setTextContent(chunk.node, stringifiedContents);
-    }
-
-    writableStream.write(parse5.serialize(formattedContent.dom));
-    writableStream.end();
+    dom5.setTextContent(chunk.node, stringifiedContents);
   }
+
+  writableStream.write(parse5.serialize(formattedContent.dom));
+  writableStream.end();
 }
 
 async function formatHTMLFiles(filePath: string): Promise<HtmlFileContent> {
   const scriptContent = await getInlineScriptContents(filePath);
-  const formattedContent: HtmlFileContent =
-      {filePath: filePath, contents: [], isHtml: true, dom: scriptContent.dom};
+  const formattedContent: HtmlFileContent = {
+    filePath: filePath,
+    contents: [],
+    dom: scriptContent.dom
+  };
 
   for (const contentChunk of scriptContent.contents) {
     const cfChildProcess = clangFormat.spawnClangFormat(
@@ -114,8 +105,8 @@ async function getInlineScriptContents(filePath: string):
           dom5.predicates.hasAttrValue('type', 'text/javascript'),
           dom5.predicates.hasAttrValue('type', 'application/javascript')));
   const scriptNodes = dom5.queryAll(dom, matcher);
-  const contentChunks: HtmlFileContent =
-      {filePath: filePath, contents: [], isHtml: true, dom: dom};
+  const contentChunks:
+      HtmlFileContent = {filePath: filePath, contents: [], dom: dom};
 
   for (const scriptNode of scriptNodes) {
     const content = dom5.getTextContent(scriptNode);
