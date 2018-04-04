@@ -1,5 +1,5 @@
-import {readConfigFile, resolveConfigs, DEFAULT_CONFIG_FILENAME} from './cli';
-import {getFilesToFormat, formatFiles} from './format';
+import {DEFAULT_CONFIG_FILENAME, readConfigFile, resolveConfigs} from './cli';
+import {formatFiles, getFilesToFormat} from './format';
 
 export async function run() {
   const [defaultConfig, userConfig] = await Promise.all(
