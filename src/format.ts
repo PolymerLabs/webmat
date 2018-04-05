@@ -89,12 +89,9 @@ async function getInlineScriptContents(filePath: string):
 
   for (const scriptNode of scriptNodes) {
     const content = dom5.getTextContent(scriptNode);
-    const contentStream = new stream.Readable();
-
-
-    contentStream._read = function() {};
+    const contentStream = new stream.PassThrough();
     contentStream.push(content);
-    contentStream.push(null);
+    contentStream.end();
 
     const contentChunk:
         HtmlContentChunk = {node: scriptNode, stream: contentStream};
