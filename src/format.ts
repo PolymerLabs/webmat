@@ -10,6 +10,7 @@ import {promisify} from 'util';
 import {FormatConfig} from './cli';
 
 const readFile = promisify(fs.readFile);
+const SINGLE_TAB = '  ';
 
 interface HtmlContentChunk {
   stream: stream.Readable, node: dom5.Node
@@ -44,9 +45,20 @@ async function writeTofile(formattedContent: (HtmlFileContent)): Promise<void> {
   const writableStream = fs.createWriteStream(formattedContent.filePath);
   for (const chunk of formattedContent.contents) {
     let stringifiedContents = '';
+    const nodeLocation = chunk.node.__location as parse5.LocationInfo;
+    let numTabs = 1;
+
+    if (nodeLocation.col) {
+      numTabs = Math.floor(nodeLocation.col / SINGLE_TAB.length) + 1;
+    }
+
+    const tabbedString = SINGLE_TAB.repeat(numTabs);
 
     chunk.stream.on('data', function(data) {
-      stringifiedContents += data.toString();
+      let splitData = data.toString().split('\n');
+
+      const tabbedData = splitData.join(`\n${tabbedString}`);
+      stringifiedContents += tabbedData;
     });
 
     await new Promise(resolve => {
@@ -54,6 +66,14 @@ async function writeTofile(formattedContent: (HtmlFileContent)): Promise<void> {
         resolve();
       });
     });
+
+    let trimmedContents = stringifiedContents.trim();
+
+    // deal with tabs at the beginning and end if the script is not empty
+    if (stringifiedContents) {
+      stringifiedContents = `\n${tabbedString}${trimmedContents}` +
+          `\n${SINGLE_TAB.repeat(numTabs - 1)}`;
+    }
 
     dom5.setTextContent(chunk.node, stringifiedContents);
   }
@@ -97,7 +117,7 @@ function formatInPlace(filePath: string): void {
 async function getInlineScriptContents(filePath: string):
     Promise<HtmlFileContent> {
   const htmlContent = await readFile(filePath, 'utf-8');
-  const dom = parse5.parse(htmlContent);
+  const dom = parse5.parse(htmlContent, {locationInfo: true});
   const matcher = dom5.predicates.AND(
       dom5.predicates.hasTagName('script'),
       dom5.predicates.OR(
