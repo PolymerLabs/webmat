@@ -16,7 +16,7 @@ interface HtmlContentChunk {
   stream: stream.Readable, node: dom5.Node
 }
 export interface HtmlFileContent {
-  filePath: string, contents: HtmlContentChunk[], dom: dom5.Node
+  filePath: string, contents: HtmlContentChunk[], dom: string
 }
 
 export async function formatFiles(filePaths: string[]): Promise<void> {
@@ -85,7 +85,7 @@ async function getInlineScriptContents(filePath: string):
           dom5.predicates.hasAttrValue('type', 'application/javascript')));
   const scriptNodes = dom5.queryAll(dom, matcher);
   const contentChunks:
-      HtmlFileContent = {filePath: filePath, contents: [], dom: dom};
+      HtmlFileContent = {filePath: filePath, contents: [], dom: htmlContent};
 
   for (const scriptNode of scriptNodes) {
     const content = dom5.getTextContent(scriptNode);
