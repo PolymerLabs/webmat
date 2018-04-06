@@ -20,6 +20,11 @@ export interface HtmlFileContent {
   filePath: string, contents: HtmlContentChunk[], dom: string
 }
 
+/**
+ * Runs the files through the formatter, and overwrites them.
+ *
+ * @param filePaths Paths of the files to be formatted.
+ */
 export async function formatFiles(filePaths: string[]): Promise<void> {
   const htmlFiles = filePaths.filter(file => path.extname(file) === '.html');
   const nonHtmlFiles = filePaths.filter(file => path.extname(file) !== '.html');
@@ -42,6 +47,12 @@ export async function formatFiles(filePaths: string[]): Promise<void> {
   await Promise.all(formatPromises);
 };
 
+/**
+ * Runs the contents of the script tags in an HTML document through the
+ * formatter and returns their unindented, formatted contents.
+ *
+ * @param filePath Path of HTML file.
+ */
 async function formatHTMLFiles(filePath: string): Promise<HtmlFileContent> {
   const scriptContent = await getInlineScriptContents(filePath);
   const formattedContent: HtmlFileContent = {
@@ -74,11 +85,22 @@ async function formatHTMLFiles(filePath: string): Promise<HtmlFileContent> {
   return formattedContent;
 }
 
+/**
+ * Runs the given file through the formatter which overwrites the file's
+ * contents.
+ *
+ * @param filePath Path of file to be formatted in place.
+ */
 function formatInPlace(filePath: string): void {
   clangFormat.spawnClangFormat(
       [filePath, '-i'], function() {}, ['ignore', 'pipe', process.stderr]);
 }
 
+/**
+ * Gathers all the contents of an HTML file's inline scripts.
+ *
+ * @param filePath Path of the flile to be searched.
+ */
 async function getInlineScriptContents(filePath: string):
     Promise<HtmlFileContent> {
   const htmlContent = await readFile(filePath, 'utf-8');
@@ -112,6 +134,11 @@ async function getInlineScriptContents(filePath: string):
   return contentChunks;
 }
 
+/**
+ * Executes the globs inside of a given format config.
+ *
+ * @param config Config file to be executed.
+ */
 export function getFilesToFormat(config: FormatConfig): string[] {
   const filesToFormat =
       fastGlob.sync<string>(config.include, {ignore: config.exclude});
