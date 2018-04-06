@@ -5,7 +5,7 @@
   "bin": "bin/webmat.js",
   "scripts": {
     "build": "tsc",
-    "format": "node ./bin/format-polymer-project.js"
+    "format": "node ./bin/webmat.js"
   },
   "repository": {
     "type": "git",
