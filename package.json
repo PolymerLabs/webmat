@@ -21,6 +21,7 @@
   },
   "devDependencies": {
     "@types/node": "^9.6.1",
+    "@types/vinyl": "^2.0.2",
     "typescript": "^2.8.1"
   }
 }
