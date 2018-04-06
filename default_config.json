@@ -7,6 +7,7 @@
   "exclude": [
     "**/*.min.js",
     "**/*.d.ts",
+    "lib/**/*",
     "node_modules/**/*",
     "bower_components/**/*"
   ]
