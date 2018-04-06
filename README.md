@@ -67,6 +67,7 @@ Types:
 ```
 
 Descriptions:
+
 | property | description |
 | -------- | ----------- |
 | include | List of globs to include in format selection |
