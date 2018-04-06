@@ -1,11 +1,15 @@
 {
-  "name": "format-polymer-project",
+  "name": "webmat",
   "version": "0.0.1",
-  "description": "Formats your entire project",
-  "bin": "bin/format-polymer-project.js",
+  "description": "Formats your entire project with clang-format",
+  "bin": "bin/webmat.js",
   "scripts": {
     "build": "tsc",
     "format": "node ./bin/format-polymer-project.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/PolymerLabs/webmat"
   },
   "author": "The Polymer Project Authors",
   "license": "BSD-3-Clause",
