@@ -4,6 +4,7 @@ import {promisify} from 'util';
 
 const readFile = promisify(fs.readFile);
 const CONFIG_FILENAME = 'formatconfig.json';
+
 export const DEFAULT_CONFIG_FILENAME =
     path.join(__dirname, '..', 'default_config.json');
 
@@ -15,9 +16,12 @@ interface ParsedConfig {
 }
 
 /**
+ * Resolves a user config against the default config. If the user config has the
+ * `ignoreDefaults` flag, then it returns the user config. If not, then it
+ * merges the user config with the default config.
  *
- * @param defaultConfig
- * @param userConfig
+ * @param defaultConfig default_config.json parsed file contents.
+ * @param userConfig user config (formatconfig.json) parsed file contents.
  */
 export function resolveConfigs(
     defaultConfig: FormatConfig|null,
@@ -46,17 +50,16 @@ export function resolveConfigs(
 }
 
 /**
+ * Reads and parses a format config file.
  *
- * @param path
+ * @param path path of the file to be parsed (defaults to formatconfig.json).
  */
-export async function readConfigFile(path?: string):
+export async function readConfigFile(path: string = CONFIG_FILENAME):
     Promise<FormatConfig|null> {
-  const configFilepath = path || CONFIG_FILENAME;
-
   let configContents: string|null;
 
   try {
-    configContents = await readFile(configFilepath, 'utf8');
+    configContents = await readFile(path, 'utf8');
   } catch (e) {
     configContents = null;
   }
