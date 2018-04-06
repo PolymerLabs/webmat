@@ -8,12 +8,13 @@ import * as stream from 'stream';
 import {promisify} from 'util';
 
 import {FormatConfig} from './cli';
+import {ReadableStreamCache} from './util';
 import {writeTofile} from './write-output';
 
 const readFile = promisify(fs.readFile);
 
 interface HtmlContentChunk {
-  stream: stream.Readable, node: dom5.Node
+  streamReader: ReadableStreamCache, node: dom5.Node
 }
 export interface HtmlFileContent {
   filePath: string, contents: HtmlContentChunk[], dom: string
@@ -55,11 +56,16 @@ async function formatHTMLFiles(filePath: string): Promise<HtmlFileContent> {
         function() {},
         ['pipe', 'pipe', process.stderr]);
 
-    contentChunk.stream.pipe(cfChildProcess.stdin);
+    const cachedStdout = new ReadableStreamCache(cfChildProcess.stdout);
+    const readable = new stream.PassThrough();
+
+    readable.pipe(cfChildProcess.stdin);
+    readable.push(await contentChunk.streamReader.streamCached);
+    readable.push(null);
 
     const formattedChunk: HtmlContentChunk = {
       node: contentChunk.node,
-      stream: cfChildProcess.stdout
+      streamReader: cachedStdout
     };
 
     formattedContent.contents.push(formattedChunk);
@@ -90,11 +96,15 @@ async function getInlineScriptContents(filePath: string):
   for (const scriptNode of scriptNodes) {
     const content = dom5.getTextContent(scriptNode);
     const contentStream = new stream.PassThrough();
-    contentStream.push(content);
-    contentStream.end();
+    const cachedContentStream = new ReadableStreamCache(contentStream);
 
-    const contentChunk:
-        HtmlContentChunk = {node: scriptNode, stream: contentStream};
+    contentStream.push(content);
+    contentStream.push(null);
+
+    const contentChunk: HtmlContentChunk = {
+      node: scriptNode,
+      streamReader: cachedContentStream
+    };
 
     contentChunks.contents.push(contentChunk);
   }

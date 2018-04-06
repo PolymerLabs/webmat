@@ -16,9 +16,10 @@ export async function writeTofile(formattedContent: (HtmlFileContent)):
   writableStream.end();
 }
 
-async function updateAst(formattedContent: HtmlFileContent): Promise<void> {
+function updateAst(formattedContent: HtmlFileContent): Promise<void[]> {
+  const updatePromises: Promise<void>[] = [];
+
   for (const chunk of formattedContent.contents) {
-    let stringifiedContents = '';
     const nodeLocation = chunk.node.__location as parse5.LocationInfo;
     let numTabs = 1;
 
@@ -28,29 +29,26 @@ async function updateAst(formattedContent: HtmlFileContent): Promise<void> {
 
     const tabbedString = SINGLE_TAB.repeat(numTabs);
 
-    chunk.stream.on('data', function(data) {
-      let splitData = data.toString().split('\n');
-
+    const updatePromise = chunk.streamReader.streamCached.then(data => {
+      let stringifiedContents = '';
+      let splitData = data.split('\n');
       const tabbedData = splitData.join(`\n${tabbedString}`);
       stringifiedContents += tabbedData;
+      let trimmedContents = stringifiedContents.trim();
+
+      // deal with tabs at the beginning and end if the script is not empty
+      if (stringifiedContents) {
+        stringifiedContents = `\n${tabbedString}${trimmedContents}` +
+            `\n${SINGLE_TAB.repeat(numTabs - 1)}`;
+      }
+
+      dom5.setTextContent(chunk.node, stringifiedContents);
     });
 
-    await new Promise(resolve => {
-      chunk.stream.on('end', () => {
-        resolve();
-      });
-    });
-
-    let trimmedContents = stringifiedContents.trim();
-
-    // deal with tabs at the beginning and end if the script is not empty
-    if (stringifiedContents) {
-      stringifiedContents = `\n${tabbedString}${trimmedContents}` +
-          `\n${SINGLE_TAB.repeat(numTabs - 1)}`;
-    }
-
-    dom5.setTextContent(chunk.node, stringifiedContents);
+    updatePromises.push(updatePromise);
   }
+
+  return Promise.all(updatePromises);
 }
 
 function generateDom(formattedContent: HtmlFileContent): string {
