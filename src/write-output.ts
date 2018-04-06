@@ -6,6 +6,11 @@ import {HtmlFileContent} from './format';
 
 const SINGLE_TAB = '  ';
 
+/**
+ * Indents and writes the content to the file.
+ *
+ * @param formattedContent Content to be written to the file.
+ */
 export async function writeTofile(formattedContent: (HtmlFileContent)):
     Promise<void> {
   const writableStream = fs.createWriteStream(formattedContent.filePath);
@@ -16,6 +21,11 @@ export async function writeTofile(formattedContent: (HtmlFileContent)):
   writableStream.end();
 }
 
+/**
+ * Tabs the given content and writes it to the AST in the content chunks
+ *
+ * @param formattedContent Content to be written to the AST
+ */
 function updateAst(formattedContent: HtmlFileContent): Promise<void[]> {
   const updatePromises: Promise<void>[] = [];
 
@@ -51,6 +61,12 @@ function updateAst(formattedContent: HtmlFileContent): Promise<void[]> {
   return Promise.all(updatePromises);
 }
 
+/**
+ * Transforms the content into a dom string with prpoper spacing around the
+ * spliced inline scripts.
+ *
+ * @param formattedContent Content to be transformed into a dom string.
+ */
 function generateDom(formattedContent: HtmlFileContent): string {
   const sortedChunks = formattedContent.contents.sort((a, b) => {
     const aLine =
