@@ -1,11 +1,12 @@
 {
   "name": "webmat",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Formats your entire project with clang-format",
   "bin": "bin/webmat.js",
   "scripts": {
     "build": "tsc",
-    "format": "node ./bin/webmat.js"
+    "format": "node ./bin/webmat.js",
+    "prepare": "npm run build"
   },
   "repository": {
     "type": "git",
