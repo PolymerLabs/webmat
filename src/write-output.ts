@@ -52,7 +52,17 @@ function updateAst(formattedContent: HtmlFileContent): Promise<void[]> {
     const updatePromise = chunk.streamReader.streamCached.then(data => {
       let stringifiedContents = '';
       let splitData = data.split('\n');
-      const tabbedData = splitData.join(`\n${tabbedString}`);
+
+      // only tab nonempty lines
+      splitData = splitData.map((line) => {
+        if (line.length) {
+          return `${tabbedString}${line}`;
+        }
+
+        return line;
+      });
+
+      const tabbedData = splitData.join(`\n`);
       stringifiedContents += tabbedData;
       let trimmedContents = stringifiedContents.trim();
 
