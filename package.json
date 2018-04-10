@@ -1,6 +1,6 @@
 {
   "name": "webmat",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Formats your entire project with clang-format",
   "bin": "bin/webmat.js",
   "scripts": {
