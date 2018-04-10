@@ -8,9 +8,9 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as dom5 from 'dom5'
+import * as dom5 from 'dom5';
 import * as fs from 'fs';
-import * as parse5 from 'parse5'
+import * as parse5 from 'parse5';
 
 import {HtmlFileContent} from './format';
 
@@ -49,7 +49,7 @@ function updateAst(formattedContent: HtmlFileContent): Promise<void[]> {
 
     const tabbedString = SINGLE_TAB.repeat(numTabs);
 
-    const updatePromise = chunk.streamReader.streamCached.then(data => {
+    const updatePromise = chunk.streamReader.streamCached.then((data) => {
       let stringifiedContents = '';
       let splitData = data.split('\n');
 
@@ -64,7 +64,7 @@ function updateAst(formattedContent: HtmlFileContent): Promise<void[]> {
 
       const tabbedData = splitData.join(`\n`);
       stringifiedContents += tabbedData;
-      let trimmedContents = stringifiedContents.trim();
+      const trimmedContents = stringifiedContents.trim();
 
       // deal with tabs at the beginning and end if the script is not empty
       if (stringifiedContents) {
@@ -103,7 +103,7 @@ function generateDom(formattedContent: HtmlFileContent): string {
     return 0;
   });
 
-  let splitDom = formattedContent.dom.split('\n');
+  const splitDom = formattedContent.dom.split('\n');
 
   for (const chunk of sortedChunks) {
     const location = chunk.node.__location as parse5.ElementLocationInfo;

@@ -34,8 +34,9 @@ export class ReadableStreamCache {
    */
   private readStream(stream: stream.Readable): Promise<string> {
     let resolveStreamCached: (value: string) => void;
-    const streamCached: Promise<string> =
-        new Promise(res => {resolveStreamCached = res});
+    const streamCached: Promise<string> = new Promise((res) => {
+      resolveStreamCached = res;
+    });
     let streamOutput = '';
 
     stream.on('data', function(data) {
@@ -47,5 +48,5 @@ export class ReadableStreamCache {
     });
 
     return streamCached;
-  };
+  }
 }

@@ -26,10 +26,13 @@ import {writeTofile} from './write-output';
 const readFile = promisify(fs.readFile);
 
 interface HtmlContentChunk {
-  streamReader: ReadableStreamCache, node: dom5.Node
+  streamReader: ReadableStreamCache;
+  node: dom5.Node;
 }
 export interface HtmlFileContent {
-  filePath: string, contents: HtmlContentChunk[], dom: string
+  filePath: string;
+  contents: HtmlContentChunk[];
+  dom: string;
 }
 
 /**
@@ -39,8 +42,9 @@ export interface HtmlFileContent {
  */
 export async function formatFiles(
     filePaths: string[], style: ClangFormatStyle): Promise<void> {
-  const htmlFiles = filePaths.filter(file => path.extname(file) === '.html');
-  const nonHtmlFiles = filePaths.filter(file => path.extname(file) !== '.html');
+  const htmlFiles = filePaths.filter((file) => path.extname(file) === '.html');
+  const nonHtmlFiles =
+      filePaths.filter((file) => path.extname(file) !== '.html');
   const formatPromises: Promise<void>[] = [];
 
   for (const path of htmlFiles) {
@@ -58,7 +62,7 @@ export async function formatFiles(
 
   // wait for all HTML files to be formatted as well
   await Promise.all(formatPromises);
-};
+}
 
 /**
  * Runs the contents of the script tags in an HTML document through the

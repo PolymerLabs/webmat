@@ -20,12 +20,16 @@ export const DEFAULT_CONFIG_FILENAME =
     path.join(__dirname, '..', 'default_config.json');
 
 export interface FormatConfig {
-  include: string[], exclude: string[], ignoreDefaultGlobs: boolean,
-      style: ClangFormatStyle
+  include: string[];
+  exclude: string[];
+  ignoreDefaultGlobs: boolean;
+  style: ClangFormatStyle;
 }
 interface ParsedConfig {
-  include?: string[], exclude?: string[], ignoreDefaultGlobs?: boolean,
-      style?: ClangFormatStyle
+  include?: string[];
+  exclude?: string[];
+  ignoreDefaultGlobs?: boolean;
+  style?: ClangFormatStyle;
 }
 
 /**
@@ -45,7 +49,7 @@ export function resolveConfigs(
     const style: ClangFormatStyle = {};
 
     if (defaultConfig) {
-      Object.assign(style, defaultConfig.style)
+      Object.assign(style, defaultConfig.style);
     }
 
     Object.assign(style, userConfig.style);
@@ -87,7 +91,7 @@ export async function readConfigFile(path: string = CONFIG_FILENAME):
     configContents = null;
   }
 
-  let formatConfig: FormatConfig =
+  const formatConfig: FormatConfig =
       {include: [], exclude: [], ignoreDefaultGlobs: false, style: {}};
 
   if (configContents) {
