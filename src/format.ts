@@ -17,6 +17,8 @@ import * as path from 'path';
 import * as stream from 'stream';
 import {promisify} from 'util';
 
+import {ClangFormatStyle} from '../custom_typings/clang-format-style';
+
 import {FormatConfig} from './cli';
 import {ReadableStreamCache} from './util';
 import {writeTofile} from './write-output';
@@ -35,14 +37,15 @@ export interface HtmlFileContent {
  *
  * @param filePaths Paths of the files to be formatted.
  */
-export async function formatFiles(filePaths: string[]): Promise<void> {
+export async function formatFiles(
+    filePaths: string[], style: ClangFormatStyle): Promise<void> {
   const htmlFiles = filePaths.filter(file => path.extname(file) === '.html');
   const nonHtmlFiles = filePaths.filter(file => path.extname(file) !== '.html');
   const formatPromises: Promise<void>[] = [];
 
   for (const path of htmlFiles) {
     const htmlFormatted =
-        formatHTMLFiles(path).then(function(formattedContent) {
+        formatHTMLFiles(path, style).then(function(formattedContent) {
           return writeTofile(formattedContent);
         });
 
@@ -50,7 +53,7 @@ export async function formatFiles(filePaths: string[]): Promise<void> {
   }
 
   for (const path of nonHtmlFiles) {
-    formatInPlace(path);
+    formatInPlace(path, style);
   }
 
   // wait for all HTML files to be formatted as well
@@ -63,7 +66,8 @@ export async function formatFiles(filePaths: string[]): Promise<void> {
  *
  * @param filePath Path of HTML file.
  */
-async function formatHTMLFiles(filePath: string): Promise<HtmlFileContent> {
+async function formatHTMLFiles(
+    filePath: string, style: ClangFormatStyle): Promise<HtmlFileContent> {
   const scriptContent = await getInlineScriptContents(filePath);
   const formattedContent: HtmlFileContent = {
     filePath: filePath,
@@ -73,7 +77,7 @@ async function formatHTMLFiles(filePath: string): Promise<HtmlFileContent> {
 
   for (const contentChunk of scriptContent.contents) {
     const cfChildProcess = clangFormat.spawnClangFormat(
-        ['-assume-filename=.js'],
+        ['-assume-filename=.js', `-style=${JSON.stringify(style)}`],
         function() {},
         ['pipe', 'pipe', process.stderr]);
 
@@ -101,9 +105,11 @@ async function formatHTMLFiles(filePath: string): Promise<HtmlFileContent> {
  *
  * @param filePath Path of file to be formatted in place.
  */
-function formatInPlace(filePath: string): void {
+function formatInPlace(filePath: string, style: ClangFormatStyle): void {
   clangFormat.spawnClangFormat(
-      [filePath, '-i'], function() {}, ['ignore', 'pipe', process.stderr]);
+      [filePath, '-i', `-style=${JSON.stringify(style)}`],
+      function() {},
+      ['ignore', 'pipe', process.stderr]);
 }
 
 /**

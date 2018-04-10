@@ -47,8 +47,8 @@ webmat will simply append your custom config to the default config and then
 select files using [fast-glob](https://github.com/mrmlnc/fast-glob)'s set of
 selection rules. fast-glob's reading algorithm will run the excludes first, so
 if you want to format a file that is in the default config's exclude list, then
-you will have to add the `ignoreDefaults` flag to completely ignore the default
-configuration.
+you will have to add the `ignoreDefaultGlobs` flag to completely ignore the
+default include / exclude configurations.
 
 # API
 I haven't totally made this user friendly yet, please come back later!
@@ -62,7 +62,7 @@ Types:
 {
   include: string[],
   exclude: string[],
-  ignoreDefaults: boolean
+  ignoreDefaultGlobs: boolean
 }
 ```
 
@@ -72,4 +72,4 @@ Descriptions:
 | -------- | ----------- |
 | include | List of globs to include in format selection |
 | exclude | List of globs to exclude from format selection |
-| ignoreDefaults  | Completely ignores default config globs |
+| ignoreDefaultGlobs  | Completely ignores default include / exclude globs |

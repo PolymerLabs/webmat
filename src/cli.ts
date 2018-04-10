@@ -11,6 +11,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import {promisify} from 'util';
+import {ClangFormatStyle} from '../custom_typings/clang-format-style';
 
 const readFile = promisify(fs.readFile);
 const CONFIG_FILENAME = 'formatconfig.json';
@@ -19,10 +20,12 @@ export const DEFAULT_CONFIG_FILENAME =
     path.join(__dirname, '..', 'default_config.json');
 
 export interface FormatConfig {
-  include: string[], exclude: string[], ignoreDefaults: boolean
+  include: string[], exclude: string[], ignoreDefaultGlobs: boolean,
+      style: ClangFormatStyle
 }
 interface ParsedConfig {
-  include?: string[], exclude?: string[], ignoreDefaults?: boolean
+  include?: string[], exclude?: string[], ignoreDefaultGlobs?: boolean,
+      style?: ClangFormatStyle
 }
 
 /**
@@ -38,7 +41,16 @@ export function resolveConfigs(
     userConfig: FormatConfig|null): FormatConfig {
   let activeConfig: FormatConfig|null = null;
 
-  if (userConfig && userConfig.ignoreDefaults) {
+  if (userConfig && userConfig.ignoreDefaultGlobs) {
+    const style: ClangFormatStyle = {};
+
+    if (defaultConfig) {
+      Object.assign(style, defaultConfig.style)
+    }
+
+    Object.assign(style, userConfig.style);
+    userConfig.style = style;
+
     return userConfig;
   }
 
@@ -48,6 +60,7 @@ export function resolveConfigs(
     if (userConfig) {
       activeConfig.include = activeConfig.include.concat(userConfig.include);
       activeConfig.exclude = activeConfig.exclude.concat(userConfig.exclude);
+      Object.assign(activeConfig.style, userConfig.style);
     }
   }
 
@@ -74,8 +87,8 @@ export async function readConfigFile(path: string = CONFIG_FILENAME):
     configContents = null;
   }
 
-  let formatConfig:
-      FormatConfig = {include: [], exclude: [], ignoreDefaults: false};
+  let formatConfig: FormatConfig =
+      {include: [], exclude: [], ignoreDefaultGlobs: false, style: {}};
 
   if (configContents) {
     let parsedContents: ParsedConfig;
@@ -91,7 +104,9 @@ export async function readConfigFile(path: string = CONFIG_FILENAME):
     if (parsedContents) {
       formatConfig.include = parsedContents.include || [];
       formatConfig.exclude = parsedContents.exclude || [];
-      formatConfig.ignoreDefaults = parsedContents.ignoreDefaults || false;
+      formatConfig.ignoreDefaultGlobs =
+          parsedContents.ignoreDefaultGlobs || false;
+      formatConfig.style = parsedContents.style || {};
     }
 
     return formatConfig;

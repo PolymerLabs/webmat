@@ -10,5 +10,17 @@
     "lib/**/*",
     "node_modules/**/*",
     "bower_components/**/*"
-  ]
+  ],
+  "style": {
+    "BasedOnStyle": "Google",
+    "AlignAfterOpenBracket": "AlwaysBreak",
+    "AllowAllParametersOfDeclarationOnNextLine": false,
+    "AllowShortBlocksOnASingleLine": false,
+    "AllowShortCaseLabelsOnASingleLine": false,
+    "AllowShortFunctionsOnASingleLine": "None",
+    "AllowShortIfStatementsOnASingleLine": false,
+    "AllowShortLoopsOnASingleLine": false,
+    "BinPackArguments": false,
+    "BinPackParameters": false
+  }
 }
