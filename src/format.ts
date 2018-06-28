@@ -130,7 +130,8 @@ async function getInlineScriptContents(filePath: string):
       dom5.predicates.OR(
           dom5.predicates.NOT(dom5.predicates.hasAttr('type')),
           dom5.predicates.hasAttrValue('type', 'text/javascript'),
-          dom5.predicates.hasAttrValue('type', 'application/javascript')));
+          dom5.predicates.hasAttrValue('type', 'application/javascript'),
+          dom5.predicates.hasAttrValue('type', 'module')));
   const scriptNodes = dom5.queryAll(dom, matcher);
   const contentChunks:
       HtmlFileContent = {filePath: filePath, contents: [], dom: htmlContent};
