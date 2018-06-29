@@ -43,6 +43,18 @@ directory that you are running webmat. An example:
 }
 ```
 
+## Clang-format styles
+You can also override our clang-format styling using `formatconfig.json`'s `style` property. It should follow clang-format's [style options](https://clang.llvm.org/docs/ClangFormatStyleOptions.html).
+```json
+{
+  "style": {
+    "KeepEmptyLinesAtTheStartOfBlocks": true,
+    "ReflowComments": true,
+    "MaxEmptyLinesToKeep": 5
+  }
+}
+```
+
 webmat will simply append your custom config to the default config and then
 select files using [fast-glob](https://github.com/mrmlnc/fast-glob)'s set of
 selection rules. fast-glob's reading algorithm will run the excludes first, so
@@ -62,7 +74,8 @@ Types:
 {
   include: string[],
   exclude: string[],
-  ignoreDefaultGlobs: boolean
+  ignoreDefaultGlobs: boolean,
+  style: {[string]: any}
 }
 ```
 
@@ -73,3 +86,4 @@ Descriptions:
 | include | List of globs to include in format selection |
 | exclude | List of globs to exclude from format selection |
 | ignoreDefaultGlobs  | Completely ignores default include / exclude globs |
+| style  | JSON [clang-format style options](https://clang.llvm.org/docs/ClangFormatStyleOptions.html) config |
