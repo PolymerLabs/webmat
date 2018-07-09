@@ -9,6 +9,7 @@
  */
 
 import * as dom5 from 'dom5';
+import * as esprima from 'esprima';
 import * as fs from 'fs';
 import * as parse5 from 'parse5';
 
@@ -50,15 +51,50 @@ function updateAst(formattedContent: HtmlFileContent): Promise<void[]> {
     const tabbedString = SINGLE_TAB.repeat(numTabs);
 
     const updatePromise = chunk.streamReader.streamCached.then((data) => {
+      const allTokens = esprima.tokenize(data, {loc: true});
+      const templateTokens = allTokens.filter((token) => {
+        return token.type === 'Template';
+      });
       let stringifiedContents = '';
       let splitData = data.split('\n');
 
-      // only tab nonempty lines
-      splitData = splitData.map((line) => {
-        if (line.length) {
-          return `${tabbedString}${line}`;
+      const nonIndentableLines: {start: number, end: number}[] = [];
+
+      for (const templateToken of templateTokens) {
+        const firstNonIndentableLine = templateToken.loc!.start.line;
+        const lastNonIndentableLine = templateToken.loc!.end.line;
+
+        // just indent if it is all the same line
+        if (templateToken.loc!.start.line !== templateToken.loc!.end.line) {
+          nonIndentableLines.push({
+            start: firstNonIndentableLine,
+            end: lastNonIndentableLine,
+          });
+        }
+      }
+
+      // only tab nonempty lines and non-templates
+      for (let lineNumber = 1; lineNumber <= splitData.length; lineNumber++) {
+        const index = lineNumber - 1;
+        let line = splitData[index];
+        let isIndentable = true;
+
+        for (const nonIndentableLine of nonIndentableLines) {
+          // first line of a template string is indentable
+          if (lineNumber > nonIndentableLine.start &&
+              lineNumber <= nonIndentableLine.end) {
+            isIndentable = false;
+            break;
+          }
         }
 
+        if (line.length && isIndentable) {
+          line = `${tabbedString}${line}`;
+        }
+
+        splitData[index] = line;
+      }
+      splitData = splitData.map((line) => {
         return line;
       });
 
