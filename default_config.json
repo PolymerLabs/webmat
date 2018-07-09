@@ -21,6 +21,7 @@
     "AllowShortIfStatementsOnASingleLine": false,
     "AllowShortLoopsOnASingleLine": false,
     "BinPackArguments": false,
-    "BinPackParameters": false
+    "BinPackParameters": false,
+    "ReflowComments": false
   }
 }
